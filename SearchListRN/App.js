@@ -1,112 +1,95 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import React, {useState, useEffect} from 'react';
+import {View, Text, FlatList, StyleSheet, TextInput} from 'react-native';
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+function App() {
+  const [masterData, setmasterData] = useState([]);
+  const [filterData, setfilterData] = useState([]);
+  const [searchval, setsearchval] = useState('');
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  useEffect(() => {
+    fetchPosts();
+    return () => {};
+  }, []);
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
-
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const fetchPosts = () => {
+    const apiURL = 'https://jsonplaceholder.typicode.com/posts';
+    fetch(apiURL)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setmasterData(data);
+        setfilterData(data);
+      });
   };
 
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
+  const ShowItem = ({item}) => {
+    return (
+      <View style={{marginTop:10}}>
+       <Text style={styles.listItemStyle}>{item.id + ' - ' + item.title}</Text>
+      </View>
+    );
+  };
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+  const SeperatorView = () => {
+    return <View style={styles.seperatorStyle} />;
+  };
+
+  const filterList = text => {
+    setsearchval(text);
+    if (text) {
+      const matchedData = filterData.filter(item => {
+        const title = item.title ? item.title.toUpperCase() : ''.toUpperCase();
+        return title.indexOf(text.toUpperCase()) > -1;
+      });
+      setmasterData(matchedData);
+    } else {
+      setmasterData(masterData);
+    }
+  };
+  return (
+    <View style={styles.constainerStyle}>
+      <TextInput
+        style={styles.inputStyle}
+        placeholder="Search here"
+        value={searchval}
+        onChangeText={filterList}
+      />
+
+      <FlatList
+        data={masterData}
+        ItemSeparatorComponent={SeperatorView}
+        keyExtractor={({item, index}) => index}
+        renderItem={ShowItem}
+      />
+    </View>
+  );
+}
 
 export default App;
+const styles = StyleSheet.create({
+  constainerStyle: {
+    marginTop: 50,
+    padding: 5,
+    flex: 1,
+  },
+  seperatorStyle: {
+    width: '100%',
+    height: 1,
+    padding: 1,
+    marginTop: 1,
+    backgroundColor: '#991100',
+  },
+  listItemStyle: {
+    fontSize: 24,
+    margin: 10,
+    backgroundColor: 'white',
+  },
+  inputStyle: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    height: 50,
+    fontSize: 18,
+    padding: 8,
+    borderRadius: 10,
+  },
+});
