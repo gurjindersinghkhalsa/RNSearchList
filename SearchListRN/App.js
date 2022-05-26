@@ -24,9 +24,7 @@ function App() {
 
   const ShowItem = ({item}) => {
     return (
-      <View style={{marginTop:10}}>
        <Text style={styles.listItemStyle}>{item.id + ' - ' + item.title}</Text>
-      </View>
     );
   };
 
